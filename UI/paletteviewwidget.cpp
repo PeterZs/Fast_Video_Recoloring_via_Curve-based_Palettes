@@ -30,8 +30,8 @@ PaletteViewWidget::PaletteViewWidget(QWidget *parent) : OpenGLWidget(parent)
 	pMenu->addAction(pResetAllTask);
 	pMenu->addAction(pRemoveSelection);
 
-	connect(pResetTask, SIGNAL(triggered()), this, SLOT(resetPaletteColor()));
-	connect(pResetAllTask, SIGNAL(triggered()), this, SLOT(resetAllPaletteColors()));
+	connect(pResetTask, SIGNAL(triggered()), this, SLOT(ResetCurrFramePaletteColor()));
+	connect(pResetAllTask, SIGNAL(triggered()), this, SLOT(ResetAllFramePalettes()));
 	connect(pRemoveSelection, SIGNAL(triggered()), this, SLOT(removeSelection()));
 }
 
@@ -48,9 +48,9 @@ void PaletteViewWidget::getColor(QColor c) {
 	int b = qBlue(c.rgb());
 	
 	if (selected_vid != -1) {
-		data->setPaletteColor(selected_vid, c);
+		data->SetPaletteColor(selected_vid, c);
 		update();
-		data->imageRecolor(data->currentFrame);
+		data->RecolorFrame(data->currFrameId);
 	}
 }
 
@@ -82,15 +82,15 @@ void PaletteViewWidget::paintGL()
 	glEnd();
 	*/
 	if (!data->isPaletteCalc) return;
-	int paletteNum = data->getPaletteNum();
+	int framePaletteSize = data->GetFramePaletteSize();
 
-	double** oriPalette_R = data->getOriginalPalette_R();
-	double** oriPalette_G = data->getOriginalPalette_G();
-	double** oriPalette_B = data->getOriginalPalette_B();
-	double** curPalette_R = data->getChangedPalette_R();
-	double** curPalette_G = data->getChangedPalette_G();
-	double** curPalette_B = data->getChangedPalette_B();
-	int index = data->currentFrame;
+	double** oriPalette_R = data->GetOriginalPalette_R();
+	double** oriPalette_G = data->GetOriginalPalette_G();
+	double** oriPalette_B = data->GetOriginalPalette_B();
+	double** curPalette_R = data->GetChangedPalette_R();
+	double** curPalette_G = data->GetChangedPalette_G();
+	double** curPalette_B = data->GetChangedPalette_B();
+	int index = data->currFrameId;
 	
 
 	float space = 0.02;
@@ -98,7 +98,7 @@ void PaletteViewWidget::paintGL()
 	float x = -0.5, y = 0.45, y1 = 0.1;
 	palette_pos.clear();
 	
-	for (int i = 0; i < paletteNum; i++)
+	for (int i = 0; i < framePaletteSize; i++)
 	{
 		float or = oriPalette_R[i][index] / 255.0, og = oriPalette_G[i][index] / 255.0, ob = oriPalette_B[i][index] / 255.0;
 		glColor3f(or , og, ob);
@@ -123,8 +123,7 @@ void PaletteViewWidget::paintGL()
 	}
 }
 
-void PaletteViewWidget::mousePressEvent(QMouseEvent *ev)
-{
+void PaletteViewWidget::mousePressEvent(QMouseEvent *ev){
 
 	if (!data->isPaletteCalc) return;
 
@@ -135,19 +134,19 @@ void PaletteViewWidget::mousePressEvent(QMouseEvent *ev)
 		double new_x = (ev->x() - half_w) / half_w / scale;
 		double new_y = -(ev->y() - half_h) / half_h / scale;
 
-		double** curPalette_R = data->getChangedPalette_R();
-		double** curPalette_G = data->getChangedPalette_G();
-		double** curPalette_B = data->getChangedPalette_B();
-		int index = data->currentFrame;
+		double** curPalette_R = data->GetChangedPalette_R();
+		double** curPalette_G = data->GetChangedPalette_G();
+		double** curPalette_B = data->GetChangedPalette_B();
+		int index = data->currFrameId;
 
-		int paletteNum = data->getPaletteNum();
+		int framePaletteSize = data->GetFramePaletteSize();
 
 		//2. 找到离鼠标点击最近的点
 		double aspect = w*1.0 / h;
 		float recw = 0.07;
 		float rech = recw * aspect;
 
-		for (int i = 0; i < paletteNum; i++)
+		for (int i = 0; i < framePaletteSize; i++)
 		{
 			double x = palette_pos[i][0];
 			double y = palette_pos[i][1];
@@ -176,23 +175,23 @@ void PaletteViewWidget::mousePressEvent(QMouseEvent *ev)
 	}
 }
 
-void PaletteViewWidget::resetPaletteColor() {
+void PaletteViewWidget::ResetCurrFramePaletteColor() {
 	if (selected_vid != -1) {
-		data->resetPaletteColor(selected_vid);
+		data->ResetCurrFramePaletteColor(selected_vid);
 		emit update();
 	}
 }
 
-void PaletteViewWidget::resetAllPaletteColors() {
+void PaletteViewWidget::ResetAllFramePalettes() {
 	if (selected_vid != -1) {
-		data->resetFramePalettes();
+		data->ResetCurrFrameAllPaletteColors();
 		emit update();
 	}
 }
 
 void PaletteViewWidget::removeSelection() {
 	if (selected_vid != -1) {
-		data->removeSelection(selected_vid);
+		data->RemoveSelection(selected_vid);
 		emit update();
 	}
 }

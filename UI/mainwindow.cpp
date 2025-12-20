@@ -28,13 +28,11 @@
 
 using namespace color_widgets;
 
-MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent)
-{
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent){
     setWindowTitle(title);
     setGeometry(100, 100, 520, 520);
 
-    data = new Data();
+    data = new VideoRecolor();
 
     QWidget* mainWidget = new QWidget();
     QVBoxLayout* mainLayout = new QVBoxLayout();
@@ -81,7 +79,7 @@ MainWindow::MainWindow(QWidget* parent) :
     //original image and recolored image=========================================================================
     
 
-    //secondRow===
+    //secondRow==================================================================================
     QHBoxLayout* SliderRowLayout = new QHBoxLayout();
     QSlider* timeSlider = new QSlider(Qt::Horizontal);
     QLabel* newValue = new QLabel("0");
@@ -93,14 +91,13 @@ MainWindow::MainWindow(QWidget* parent) :
     SliderRowLayout->addWidget(line);
     SliderRowLayout->addWidget(maxValue);
  
-    //mainLayout->addLayout(SliderRowLayout);
-    //===
+
     //=========================================================================================
     QHBoxLayout* secondRowLayout = new QHBoxLayout();
     QPushButton* playBtn = new QPushButton("Auto Play");
     QPushButton* stopBtn = new QPushButton("Stop Play");
     QPushButton* exportVideoBtn = new QPushButton("Export Video");
-    QPushButton* exportImageBtn = new QPushButton("Export Palette");
+    QPushButton* exportPaletteBtn = new QPushButton("Export Palette");
     secondRowLayout->addWidget(playBtn);
     secondRowLayout->addWidget(stopBtn);
     //=========================================================================================
@@ -118,31 +115,20 @@ MainWindow::MainWindow(QWidget* parent) :
 
     autoPlayTimer->setInterval(40);
     //image play and vis=========================================================================================
-
-    // 创建 Video progress 的 GroupBox
     QGroupBox* videoProgressGroupBox = new QGroupBox(tr("Import and Export"));
     QHBoxLayout* videoProgressLayout = new QHBoxLayout;
 
-    // 将 CalcPaletteBtn、CalcVideoBtn 和 ResetBtn 移动到 Video progress 区域
     videoProgressLayout->addWidget(importPaletteBtn);
-    videoProgressLayout->addWidget(exportImageBtn);
+    videoProgressLayout->addWidget(exportPaletteBtn);
     videoProgressLayout->addWidget(exportVideoBtn);
-    
     videoProgressGroupBox->setLayout(videoProgressLayout);
 
-    // 将新的 GroupBox 添加到 mainLayout 中，在 firstRowLayout 之后，Video operator 之前
     mainLayout->addWidget(videoProgressGroupBox);
-
-    // 创建 Video operator 的 GroupBox
     QGroupBox* groupBox = new QGroupBox(tr("Video progress"));
     QVBoxLayout* vbox = new QVBoxLayout;
 
-    // 将 SliderRowLayout 添加到 vbox 中，并让它占据一行
-    vbox->addLayout(SliderRowLayout);  // 添加 SliderRowLayout
-
-    // 将第二行布局 secondRowLayout 添加到 vbox 中
+    vbox->addLayout(SliderRowLayout); 
     vbox->addLayout(secondRowLayout);
-
     groupBox->setLayout(vbox);
 
     QDockWidget* dockPaletteWidget = new QDockWidget();
@@ -176,57 +162,43 @@ MainWindow::MainWindow(QWidget* parent) :
     this->setCentralWidget(mainWidget);
 
     connect(playBtn, &QPushButton::clicked, [=]() {
-        int totalFrameNum = data->getVideoNum();
-        double gap = 1.0 / data->getFps();
+        int totalFrameNum = data->GetFrameCnt();
+        double gap = 1.0 / data->GetFps();
         isplaying++;
         int nowisplaying = isplaying;
         for (int i = 0; i < totalFrameNum; i++) {
             if (isplaying != nowisplaying) break;
             timeSlider->setValue(i);
-            data->changePosition(i);
+            data->ChangeFrameTime(i);
             newValue->setText(QString::number(i));
             QCoreApplication::processEvents();
             Sleep(gap * 1000);
         }
     });
     connect(stopBtn, &QPushButton::clicked, [=]() {isplaying=0;});
-    connect(timeSlider, &QSlider::valueChanged, [=](const int& value) {data->changePosition(value); newValue->setText(QString::number(value)); });
-    connect(CalcVideoBtn, &QPushButton::clicked, [=]() {data->curveDeformation(); });
-    connect(CalcPaletteBtn, &QPushButton::clicked, [=]() {
-        //int k = PaletteNum->text().toInt();
-        //提取视频调色板
-        data->calcPalette();
-    });
+    connect(timeSlider, &QSlider::valueChanged, [=](const int& value) {data->ChangeFrameTime(value); newValue->setText(QString::number(value)); });
+    connect(CalcVideoBtn, &QPushButton::clicked, [=]() {data->DeformBezierCurve(); });
+    connect(CalcPaletteBtn, &QPushButton::clicked, [=]() { data->CalcVideoPalette();});
     connect(exportVideoBtn, &QPushButton::clicked, [=]() {this->exportVideo(); });
-    //connect(exportImageBtn, &QPushButton::clicked, [=]() {this->exportCurrentFrame(); });
-    connect(ResetBtn, &QPushButton::clicked, [=]() {data->resetAllPaletteColors(); timeSlider->setValue(0); });
+    connect(ResetBtn, &QPushButton::clicked, [=]() {data->ResetAllFramePalettes(); timeSlider->setValue(0); });
 
     connect(openVideoBtn, &QPushButton::clicked, [=]() {
         this->openVideo(true);
         timeSlider->setValue(0);
-        timeSlider->setMaximum(data->getVideoNum() - 1);
-        maxValue->setText(QString::number(data->getVideoNum() - 1));
+        timeSlider->setMaximum(data->GetFrameCnt() - 1);
+        maxValue->setText(QString::number(data->GetFrameCnt() - 1));
     });
 
     connect(dialog, &ColorDialog::colorChanged, paletteWidget, &PaletteViewWidget::getColor);
     connect(paletteWidget, &PaletteViewWidget::setColor, dialog, &ColorDialog::setColor);
-
-    connect(exportImageBtn, &QPushButton::clicked, [=]() {
-        data->exportPaletteColor();
-    });
-    connect(importPaletteBtn, &QPushButton::clicked, [=]() {
-
-        data->readPaletteColor();
-
-    });
+    connect(exportPaletteBtn, &QPushButton::clicked, [=]() { exportEditedFramePalettes();});
+    connect(importPaletteBtn, &QPushButton::clicked, [=]() { importEditedFramePalettes();});
 }
 
 MainWindow::~MainWindow()
 {
 }
 
-// open image & poly file
-// TODO: replace input image file with H264 encoded image
 void MainWindow::openVideo(bool merge) {
     if (data == nullptr) return;
 
@@ -237,16 +209,12 @@ void MainWindow::openVideo(bool merge) {
 
     if (dialog.exec()) {
         QStringList fileName = dialog.selectedFiles();
-
-        for (auto s : fileName) {
+        for (auto s : fileName)
             data->OpenVideo(QString(s));
-        }
         imageBeforeDockWidget->show();
         imageAfterDockWidget->show();
     }
-    else {
-        return;
-    }
+    else return;
 }
 
 void MainWindow::exportVideo() {
@@ -255,22 +223,32 @@ void MainWindow::exportVideo() {
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::DirectoryOnly);
     QStringList dirName;
-    if (fileDialog.exec() == QDialog::Accepted)
-    {
+    if (fileDialog.exec() == QDialog::Accepted){
         dirName = fileDialog.selectedFiles();
-        data->exportVideo(dirName[0]);
+        data->ExportRecoloredVideo(dirName[0]);
     }
 }
 
-void MainWindow::exportCurrentFrame() {
+void MainWindow::exportEditedFramePalettes() {
     if (data == nullptr) return;
 
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::DirectoryOnly);
     QStringList dirName;
-    if (fileDialog.exec() == QDialog::Accepted)
-    {
+    if (fileDialog.exec() == QDialog::Accepted) {
         dirName = fileDialog.selectedFiles();
-        data->exportCurrentFrame(dirName[0]);
+        data->ExportEditedFramePalettes(dirName[0]);
+    }
+}
+
+void MainWindow::importEditedFramePalettes() {
+    if (data == nullptr) return;
+
+    QFileDialog fileDialog(this);
+    fileDialog.setFileMode(QFileDialog::ExistingFile);
+    QStringList dirName;
+    if (fileDialog.exec() == QDialog::Accepted) {
+        dirName = fileDialog.selectedFiles();
+        data->ImportEditedFramePalettes(dirName[0]);
     }
 }

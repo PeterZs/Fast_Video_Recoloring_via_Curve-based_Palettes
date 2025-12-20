@@ -11,7 +11,7 @@ class ImageWidget : public QWidget
 public:
     explicit ImageWidget(bool _isAfter, QWidget *parent = nullptr);
 
-    void setData(Data *value);
+    void setData(VideoRecolor* value);
 
 protected:
     virtual void paintEvent(QPaintEvent *event);
@@ -22,7 +22,7 @@ public slots:
     void update();
 
 protected:
-    Data *data = nullptr;
+    VideoRecolor* data = nullptr;
     int time = 0;
 
 private:

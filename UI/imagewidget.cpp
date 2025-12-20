@@ -9,24 +9,21 @@ ImageWidget::ImageWidget(bool _isAfter, QWidget *parent) : QWidget(parent), isAf
 {
 }
 
-void ImageWidget::paintEvent(QPaintEvent *event)
-{
+void ImageWidget::paintEvent(QPaintEvent *event){
 	QWidget::paintEvent(event);
 
 	if (data == nullptr) return;
 
-	int width = data->getWidth();
-	int height = data->getHeight();
-	sint* image_R = data->getCurrentImage_R(isAfter);
-	sint* image_G = data->getCurrentImage_G(isAfter);
-	sint* image_B = data->getCurrentImage_B(isAfter);
+	int width = data->GetWidth();
+	int height = data->GetHeight();
+	sint* image_R = data->GetCurrentImage_R(isAfter);
+	sint* image_G = data->GetCurrentImage_G(isAfter);
+	sint* image_B = data->GetCurrentImage_B(isAfter);
 
 	QPainter painter(this);
 
 	uchar* data = new uchar[width * height * 3];
-
-	for (int i = 0; i < width * height; i++)
-	{
+	for (int i = 0; i < width * height; i++){
 		sint x = image_R[i];
 		sint y = image_G[i];
 		sint z = image_B[i];
@@ -45,33 +42,26 @@ void ImageWidget::paintEvent(QPaintEvent *event)
 	QImage im(data, width, height, width*3, QImage::Format_RGB888);
 
 	painter.setPen(QPen(Qt::red, 3));
-
 	painter.drawImage(QRectF(0, 0, width, height), im);
 
 	painter.end();
 	delete[] data;
 }
 
-void ImageWidget::setTime(int t)
-{
+void ImageWidget::setTime(int t){
 	time = t;
-
 	update();
 }
 
-void ImageWidget::update()
-{
+void ImageWidget::update(){
 	QWidget::update();
-
-	int w = data->getWidth();
-	int h = data->getHeight();
-
+	int w = data->GetWidth();
+	int h = data->GetHeight();
 	setMaximumSize(w, h);
 	setMinimumSize(w, h);
 }
 
-void ImageWidget::setData(Data *value)
-{
+void ImageWidget::setData(VideoRecolor* value){
 	data = value;
-	connect(value, &Data::updated, this, &ImageWidget::update);
+	connect(value, &VideoRecolor::updated, this, &ImageWidget::update);
 }

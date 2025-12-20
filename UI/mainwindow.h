@@ -19,9 +19,11 @@ private:
 	QDockWidget *imageAfterDockWidget = nullptr;
 	void exportVideo();
     void exportCurrentFrame();
-
     void openVideo(bool merge);
-    Data *data = nullptr;
+    void exportEditedFramePalettes();
+    void importEditedFramePalettes();
+
+    VideoRecolor* data = nullptr;
     QSlider *slider = nullptr;
     QSlider *mergeStepSlider = nullptr;
 	

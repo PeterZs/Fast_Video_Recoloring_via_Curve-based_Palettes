@@ -51,10 +51,10 @@ void OpenGLWidget::paintGL()
 
 }
 
-void OpenGLWidget::setData(Data *value)
+void OpenGLWidget::setData(VideoRecolor* value)
 {
     data = value;
-    connect(value, &Data::updated, this, &OpenGLWidget::update);
+    connect(value, &VideoRecolor::updated, this, &OpenGLWidget::update);
 }
 
 void OpenGLWidget::update()

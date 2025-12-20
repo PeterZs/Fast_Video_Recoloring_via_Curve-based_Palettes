@@ -17,7 +17,7 @@ class OpenGLWidget:public QOpenGLWidget, protected QOpenGLFunctions
 public:
     explicit OpenGLWidget(QWidget *parent = 0);
 
-    void setData(Data *value);
+    void setData(VideoRecolor* value);
 
 public slots:
     void update();
@@ -33,7 +33,7 @@ protected:
 private:
 
 protected:
-    Data *data = nullptr;
+    VideoRecolor* data = nullptr;
 
     int time = 0;
 

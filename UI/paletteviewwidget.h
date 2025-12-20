@@ -18,8 +18,8 @@ public Q_SLOTS:
 	void getColor(QColor c);
 	void setTime(int t_);
 
-	void resetPaletteColor();
-	void resetAllPaletteColors();
+	void ResetCurrFramePaletteColor();
+	void ResetAllFramePalettes();
 	void removeSelection();
 	
 Q_SIGNALS:
