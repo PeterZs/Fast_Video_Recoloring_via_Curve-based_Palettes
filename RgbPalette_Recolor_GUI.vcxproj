@@ -76,8 +76,8 @@
     <LibraryPath>D:\program_softwares\OpenCV4.1.2\build\x64\vc15\lib;D:\program_softwares\nlopt2.4.2;\libs\OpenGL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\program_softwares\Eigen3.4.0;D:\program_softwares\nlopt2.4.2;D:\program_softwares\OpenCV4.1.2\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\program_softwares\OpenCV4.1.2\build\x64\vc15\lib;D:\program_softwares\nlopt2.4.2;\libs\OpenGL;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\program_softwares\Eigen3.4.0;E:\Research\Fast_Viedeo_Recoloring\Video-Recoloring-GUI-superPixel-new\libs\nlopt2.4.2;D:\program_softwares\OpenCV4.1.2\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Research\Fast_Viedeo_Recoloring\Video-Recoloring-GUI-superPixel-new\libs\nlopt2.4.2;D:\program_softwares\OpenCV4.1.2\build\x64\vc15\lib;\libs\OpenGL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -111,7 +111,7 @@
       <LinkIncremental>false</LinkIncremental>
       <OutputFile>$(OutDir)\Recolor_GUI.exe</OutputFile>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
     <Midl>
@@ -172,7 +172,7 @@
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <OutputFile>$(OutDir)\Recolor_GUI.exe</OutputFile>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
     <Midl>
@@ -244,6 +244,7 @@
     <QtMoc Include="Qt-Color-Widgets\include\QtColorWidgets\color_dialog.hpp" />
     <QtMoc Include="Qt-Color-Widgets\include\QtColorWidgets\color_line_edit.hpp" />
     <QtMoc Include="Qt-Color-Widgets\include\QtColorWidgets\color_list_widget.hpp" />
+    <ClInclude Include="my_util.h" />
     <ClInclude Include="Qt-Color-Widgets\include\QtColorWidgets\color_names.hpp" />
     <QtMoc Include="Qt-Color-Widgets\include\QtColorWidgets\color_palette.hpp" />
     <QtMoc Include="Qt-Color-Widgets\include\QtColorWidgets\color_palette_model.hpp" />
@@ -270,7 +271,6 @@
     <ClInclude Include="UI\openglwidget.h" />
     <QtMoc Include="UI\paletteviewwidget.h" />
     <ClInclude Include="utility.h" />
-    <ClInclude Include="videowidget.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="debug\moc_predefs.h.cbt">

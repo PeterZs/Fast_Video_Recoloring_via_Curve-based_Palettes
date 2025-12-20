@@ -1,13 +1,5 @@
 #include "utility.h"
 
-
-long long fact(int n) {
-	if (n == 0) return 1;
-	long long res = n;
-	for (n--; n > 0; n--) res *= n;
-	return res;
-}
-
 void RGB2LAB(cv::Vec3d& rgb) {
     double var_r = rgb[0] / 255.0;
     double var_g = rgb[1] / 255.0;
@@ -77,111 +69,6 @@ void LAB2RGB(cv::Vec3d& lab) {
     lab[2] = var_b * 255.0;
 }
 
-cv::Vec3d RGB2HSV(const cv::Vec3d& rgb) {
-    double b, g, r;
-    double h, s, v;
-    double min, max;
-    double delta;
-    cv::Vec3d hsv;
-
-    r = rgb[0] / 255.0;
-    g = rgb[1] / 255.0;
-    b = rgb[2] / 255.0;
-
-    if (r > g)
-    {
-        max = MAX(r, b);
-        min = MIN(g, b);
-    }
-    else
-    {
-        max = MAX(g, b);
-        min = MIN(r, b);
-    }
-
-    v = max;
-    delta = max - min;
-
-    if (fabs(max - 0) < 1e-4)
-        s = 0.0;
-    else
-        s = delta / max;
-
-    if (max == min)
-        h = 0.0;
-    else
-    {
-        if (fabs(r - max) < 1e-4 && g >= b)
-        {
-            h = 60 * (g - b) / delta + 0;
-        }
-        else if (fabs(r - max) < 1e-4 && g < b)
-        {
-            h = 60 * (g - b) / delta + 360;
-        }
-        else if (fabs(g - max) < 1e-4)
-        {
-            h = 60 * (b - r) / delta + 120;
-        }
-        else if (fabs(b - max) < 1e-4)
-        {
-            h = 60 * (r - g) / delta + 240;
-        }
-    }
-
-    hsv[0] = (int)(h + 0.5);
-    hsv[0] = (hsv[0] > 359) ? (hsv[0] - 360) : hsv[0];
-    hsv[0] = (hsv[0] < 0) ? (hsv[0] + 360) : hsv[0];
-    hsv[1] = s;
-    hsv[2] = v;
-
-    return hsv;
-}
-
-int judgeColor(const cv::Vec3d& rgb) {
-    cv::Vec3d p = RGB2HSV(rgb);
-    p[0] /= 2;
-    p[1] *= 255.0;
-    p[2] *= 255.0;
-
-    if (p[2] >= 0 && p[2] <= 46) {
-        return 0;//ºÚ
-    }
-    else if (p[2] >= 46 && p[2] <= 220 && p[1] >= 0 && p[1] <= 43) {
-        return 1;//»Ò
-    }
-    else if (p[2] > 220 && p[2] <= 255 && p[1] >= 0 && p[1] <= 30) {
-        return 2;//°×
-    }
-    else if (p[1] < 43 || p[2] < 46) {
-        return -1;
-    }
-
-    else if ((p[0] >= 0 && p[0] <= 10) || (p[0] >= 156 && p[0] <= 180)) {
-        return 3;//ºì
-    }
-    else if (p[0] >= 11 && p[0] <= 25) {
-        return 4;//³È
-    }
-    else if (p[0] >= 26 && p[0] <= 34) {
-        return 5;//»Æ
-    }
-    else if (p[0] >= 35 && p[0] <= 77) {
-        return 6;//ÂÌ
-    }
-    else if (p[0] >= 78 && p[0] <= 99) {
-        return 7;//Çà
-    }
-    else if (p[0] >= 100 && p[0] <= 124) {
-        return 8;//À¶
-    }
-    else if (p[0] >= 125 && p[0] <= 155) {
-        return 9;//×Ï
-    }
-
-    return -1;
-}
-
 double lab_distance(double r1, double g1, double b1, double r2, double g2, double b2) {
     double K1 = 0.045, K2 = 0.015;
     double del_L = r1 - r2;
@@ -201,111 +88,84 @@ double squareDistance(const vector<cv::Vec3d>& a, const vector<cv::Vec3d>& b) {
     return sum;
 }
 
-double bezeirCost(const vector<double>& x, vector<double>& grad, void* data) {
+double FitBezierLossFunction(const vector<double>& x, vector<double>& grad, void* data) {
     const data3* dt = reinterpret_cast<data3*>(data);
-    int m = dt->pointNum;
-    int n = dt->controlNum;
+    int frameCnt = dt->frameCnt;
+    int ctrlPointCnt = dt->BezierCtrlPointNum;
 
-    vector<double> bPointsL = vector<double>(m);
-    vector<double> bPointsA = vector<double>(m);
-    vector<double> bPointsB = vector<double>(m);
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
-            bPointsL[i] += dt->A[i * n + j] * x[j];
-            bPointsA[i] += dt->A[i * n + j] * x[j + n];
-            bPointsB[i] += dt->A[i * n + j] * x[j + 2 * n];
+    vector<double> Rs = vector<double>(frameCnt);
+    vector<double> Gs = vector<double>(frameCnt);
+    vector<double> Bs = vector<double>(frameCnt);
+    for (int i = 0; i < frameCnt; i++) {
+        for (int j = 0; j < ctrlPointCnt; j++) {
+            Rs[i] += dt->A[i * ctrlPointCnt + j] * x[j];
+            Gs[i] += dt->A[i * ctrlPointCnt + j] * x[j + ctrlPointCnt];
+            Bs[i] += dt->A[i * ctrlPointCnt + j] * x[j + 2 * ctrlPointCnt];
         }
     }
 
-    for (int j = 0; j < n; j++) {
+    for (int j = 0; j < ctrlPointCnt; j++) {
         grad[j] = 0;
-        for (int i = 0; i < m; i++) {
-            grad[j] += 2 * dt->A[i * n + j] * (bPointsL[i] - dt->pointR[i]);
-        }
+        for (int i = 0; i < frameCnt; i++)
+            grad[j] += 2 * dt->A[i * ctrlPointCnt + j] * (Rs[i] - dt->pointR[i]);
     }
-    for (int j = n; j < 2 * n; j++) {
+    for (int j = ctrlPointCnt; j < 2 * ctrlPointCnt; j++) {
         grad[j] = 0;
-        for (int i = 0; i < m; i++) {
-            grad[j] += 2 * dt->A[i * n + j - n] * (bPointsA[i] - dt->pointG[i]);
-        }
+        for (int i = 0; i < frameCnt; i++)
+            grad[j] += 2 * dt->A[i * ctrlPointCnt + j - ctrlPointCnt] * (Gs[i] - dt->pointG[i]);
     }
-    for (int j = 2 * n; j < 3 * n; j++) {
+    for (int j = 2 * ctrlPointCnt; j < 3 * ctrlPointCnt; j++) {
         grad[j] = 0;
-        for (int i = 0; i < m; i++) {
-            grad[j] += 2 * dt->A[i * n + j - 2 * n] * (bPointsB[i] - dt->pointB[i]);
-        }
+        for (int i = 0; i < frameCnt; i++)
+            grad[j] += 2 * dt->A[i * ctrlPointCnt + j - 2 * ctrlPointCnt] * (Bs[i] - dt->pointB[i]);
     }
 
     double loss = 0;
-    for (int i = 0; i < m; i++) {
-        double tmp = 0;
-        tmp += pow(bPointsL[i] - dt->pointR[i], 2);
-        tmp += pow(bPointsA[i] - dt->pointG[i], 2);
-        tmp += pow(bPointsB[i] - dt->pointB[i], 2);
-        tmp /= 3;
-        loss += tmp;
+    for (int i = 0; i < frameCnt; i++) {
+        double tmp = pow(Rs[i] - dt->pointR[i], 2) + pow(Gs[i] - dt->pointG[i], 2) + pow(Bs[i] - dt->pointB[i], 2);
+        loss += tmp / 3;
     }
-
     return loss;
 }
 
-double moveCost(const vector<double>& x, vector<double>& grad, void* data) {
+double RefitBezierLossFunction(const vector<double>& x, vector<double>& grad, void* data) {
     const data2* dt = reinterpret_cast<data2*>(data);
-    int m = dt->nodeNum;
-    int n = dt->controlNum;
-    int mnum = dt->changedIndex.size();
+    int m = dt->frameCnt;
+    int n = dt->BezierCtrlPointNum;
+    int k = dt->changedIndex.size();
     double result = 0;
 
     int index = 0;
-    vector<double> reCurve = vector<double>(mnum);
-    for (int i = 0; i < mnum; i++) {
+    vector<double> reCurve = vector<double>(k);
+    for (int i = 0; i < k; i++) {
         index = dt->changedIndex[i];
         for (int j = 0; j < n; j++) {
             reCurve[i] += dt->A[index * n + j] * x[j];
         }
     }
 
-    vector<double> reDiri = vector<double>(m);
+    vector<double> refitBezierDeriv = vector<double>(m);
     for (size_t i = 0; i < m; i++) {
         for (size_t j = 0; j < n - 1; j++) {
-            reDiri[i] += dt->coeff1[i * (n - 1) + j] * (x[j + 1] - x[j]);
-        }
-    }
-
-    for (size_t k = 0; k < n; k++) {
-        for (size_t i = 0; i < m; i++) {
-            grad[k] += dt->coeff2[k * m + i] * (reDiri[i] - dt->oriDiri[i]);
-        }
-        grad[k] /= m;
-        grad[k] *= dt->lamda;
-    }
-
-    for (size_t i = 0; i < mnum; i++) {
-        index = dt->changedIndex[i];
-        for (size_t j = 0; j < n; j++) {
-            grad[j] += 2 * dt->A[index * n + j] * (reCurve[i] - dt->changedPoint[i]);
+            refitBezierDeriv[i] += dt->coeff1[i * (n - 1) + j] * (x[j + 1] - x[j]);
         }
     }
 
     double loss1 = 0;
     double loss2 = 0;
     for (size_t i = 0; i < m; i++) {
-        loss1 += pow(reDiri[i] - dt->oriDiri[i], 2);
+        loss1 += pow(refitBezierDeriv[i] - dt->oriBezierDeriv[i], 2);
     }
     loss1 /= abs(m);
 
-    for (size_t i = 0; i < mnum; i++) {
+    for (size_t i = 0; i < k; i++) {
         loss2 += pow(reCurve[i] - dt->changedPoint[i], 2);
     }
-    cout <<"mnum:" << mnum << endl;
+    cout <<"mnum:" << k << endl;
 
-    if (mnum != 0) {
-        loss2 /= mnum;
+    if (k != 0) {
+        loss2 /= k;
     }
-
-    // º¯Êý½áÊøÇ°ÇåÀí
-    reCurve.clear();
-    reDiri.clear();
 
     result = loss1 * dt->lamda + loss2;
     cout <<"loss1:" << loss1 << "   loss2:" << loss2 << endl;
@@ -335,4 +195,10 @@ void exportPoint(int f, const vector<cv::Vec3d>& superPixel, const vector<cv::Ve
 
     out1.close();
     out2.close();
+}
+
+double clamp_(double s, double lo, double hi) {
+    if (s < lo) return lo;
+    else if (s > hi) return hi;
+    else return s;
 }

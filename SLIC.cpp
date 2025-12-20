@@ -264,7 +264,7 @@ void PerformSuperpixelSegmentation_VariableSandM(
 	vector<int>& klabels,
 	const int& STEP,
 	const int& NUMITR,
-	vector<int>& clustersize)
+	vector<int>& superpixelSize)
 {
 	// 计算像素的数量
 	int sz = m_width * m_height;
@@ -286,7 +286,7 @@ void PerformSuperpixelSegmentation_VariableSandM(
 	vector<double> sigmab(numk, 0);
 	vector<double> sigmax(numk, 0);
 	vector<double> sigmay(numk, 0);
-	vector<double> inv(numk, 0);//to store 1/clustersize[k] values
+	vector<double> inv(numk, 0);//to store 1/superpixelSize[k] values
 	vector<double> distxy(sz, DBL_MAX);
 	vector<double> distlab(sz, DBL_MAX);
 	vector<double> distvec(sz, DBL_MAX);
@@ -380,7 +380,7 @@ void PerformSuperpixelSegmentation_VariableSandM(
 		sigmab.assign(numk, 0);
 		sigmax.assign(numk, 0);
 		sigmay.assign(numk, 0);
-		clustersize.assign(numk, 0);
+		superpixelSize.assign(numk, 0);
 
 		// 遍历每个像素，统计各聚类中心的所属像素
 		for (int j = 0; j < sz; j++)
@@ -398,22 +398,22 @@ void PerformSuperpixelSegmentation_VariableSandM(
 			sigmay[klabels[j]] += (j / m_width);
 
 			// 对应超像素的所属像素数量加一
-			clustersize[klabels[j]]++;
+			superpixelSize[klabels[j]]++;
 		}
 
 		// 确保每个聚类中心的像素数量不为0，并且计算超像素统括的像素数量的倒数
 		{for (int k = 0; k < numk; k++)
 		{
-			//_ASSERT(clustersize[k] > 0);
-			if (clustersize[k] <= 0) clustersize[k] = 1;
-			inv[k] = 1.0 / double(clustersize[k]);//computing inverse now to multiply, than divide later
+			//_ASSERT(superpixelSize[k] > 0);
+			if (superpixelSize[k] <= 0) superpixelSize[k] = 1;
+			inv[k] = 1.0 / double(superpixelSize[k]);//computing inverse now to multiply, than divide later
 		}}
 
 
 	}
 }
 
-void generateSuperpixels(
+void GenerateSuperpixels(
 	const sint* imageR,
 	const sint* imageG,
 	const sint* imageB,
@@ -423,7 +423,7 @@ void generateSuperpixels(
 	const int& K,
 	const int& cols,
 	const int& rows,
-	vector<int>& clustersize) {
+	vector<int>& superpixelSize) {
 
 	// 计算图像的像素数量
 	int size = rows * cols;
@@ -456,7 +456,7 @@ void generateSuperpixels(
 	int STEP = sqrt(double(size) / double(K)) + 2.0;
 
 	// 分割超像素
-	PerformSuperpixelSegmentation_VariableSandM(imgL, imgA, imgB, kseedsl, kseedsa, kseedsb, kseedsx, kseedsy, cols, rows, labels, STEP, 10, clustersize);
+	PerformSuperpixelSegmentation_VariableSandM(imgL, imgA, imgB, kseedsl, kseedsa, kseedsb, kseedsx, kseedsy, cols, rows, labels, STEP, 10, superpixelSize);
 
 	delete[] imgL;
 	delete[] imgA;

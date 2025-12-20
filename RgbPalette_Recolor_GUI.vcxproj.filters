@@ -252,9 +252,6 @@
     <ClInclude Include="Qt-Color-Widgets\include\QtColorWidgets\colorwidgets_global.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="videowidget.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="Qt-Color-Widgets\include\QtColorWidgets\gradient_helper.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -263,6 +260,9 @@
     </ClInclude>
     <ClInclude Include="UI\opengl3dwidget.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="my_util.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

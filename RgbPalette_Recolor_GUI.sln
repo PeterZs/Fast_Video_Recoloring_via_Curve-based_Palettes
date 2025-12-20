@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.34031.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RgbPalette_Recolor_GUI", "RgbPalette_Recolor_GUI.vcxproj", "{9C7E6677-DB40-3F5F-B188-64784DCB956E}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup1", "C:\Users\admin\Desktop\安装\Setup1\Setup1.vdproj", "{92E3BC59-BC91-40D0-A9E5-94652EA78005}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -17,8 +15,6 @@ Global
 		{9C7E6677-DB40-3F5F-B188-64784DCB956E}.Debug|x64.Build.0 = Debug|x64
 		{9C7E6677-DB40-3F5F-B188-64784DCB956E}.Release|x64.ActiveCfg = Release|x64
 		{9C7E6677-DB40-3F5F-B188-64784DCB956E}.Release|x64.Build.0 = Release|x64
-		{92E3BC59-BC91-40D0-A9E5-94652EA78005}.Debug|x64.ActiveCfg = Debug
-		{92E3BC59-BC91-40D0-A9E5-94652EA78005}.Release|x64.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,6 @@
 #ifndef DATA_H
 #define DATA_H
 
-
 #include<algorithm>
 #include<QString>
 #include<QObject>
@@ -32,117 +31,104 @@ using namespace std;
 
 typedef short int sint;
 
-class Data : public QObject
-{
+class VideoRecolor : public QObject{
 	Q_OBJECT
-
 public:
-	int currentFrame;
+	int currFrameId;
 	bool isPaletteCalc;
 	bool isVideoOpen;
+	bool isImgSizeReduce;
 	vector<bool> isSelected;
 
-	void OpenVideo(QString path);
-	void calcPalette();
-	double calcPaletteNum(const vector<double>& seedsL, const vector<double>& seedsA, const vector<double>& seedsB, const vector<int>& clustersize, int threshold );
-	void extractFirstPalette(int index, const vector<double>& seedsL, const vector<double>& seedsA, const vector<double>& seedsB);
-	void extractPalette(int index, const vector<double>& seedsL, const vector<double>& seedsA, const vector<double>& seedsB, int max_it = 1);
-	double calc_param(int index, vector<double>& lamda);
-	void calc_singlePoint_weights(int findex, const cv::Vec3d& point, double param, const vector<double>& lamda, vector<double>& singleWeight);
-	void calcWeights(int findex);
-	void imageRecolor(int findex);
-	void videoRecolor();
-	void curveDeformation();
-
-	int getWidth() const { return video_cols; }
-	int getHeight() const { return video_rows; }
-	int getVideoNum() const { return videoNum; }
-	int getPaletteNum() const { return paletteNum; }
-	double getFps() const { return fps; }
-
-	sint* getCurrentImage_R(bool isAfter) const { return isAfter ? changedVideo_R[currentFrame] : oriVideo_R[currentFrame]; }
-	sint* getCurrentImage_G(bool isAfter) const { return isAfter ? changedVideo_G[currentFrame] : oriVideo_G[currentFrame]; }
-	sint* getCurrentImage_B(bool isAfter) const { return isAfter ? changedVideo_B[currentFrame] : oriVideo_B[currentFrame]; }
-	void changePosition(int frameNum);
-	void exportVideo(QString filename);
-	void exportOriPalette(QString filename);
-	void exportImagePalette();
-	void exportChangedPalette(QString filename);
-	void exportCurrentFrame(QString filename);
+	void	OpenVideo(QString path);
+	void	CalcVideoPalette();
+	double	CalcFramePaletteSize(const vector<double>& seedsL, const vector<double>& seedsA, const vector<double>& seedsB, const vector<int>& superpixelSize, int threshold );
+	void	ExtractFirstFramePalette(int index, const vector<double>& seedsL, const vector<double>& seedsA, const vector<double>& seedsB);
+	void	ExtractOtherFramePalette(int index, const vector<double>& seedsL, const vector<double>& seedsA, const vector<double>& seedsB);
+	double	calc_param(int index, vector<double>& lamda);
+	void	CalcSinglePointWeights(int findex, const cv::Vec3d& point, double param, const vector<double>& lamda, vector<double>& singleWeight);
+	void	CalcWeights(int findex);
+	void	RecolorFrame(int findex);
+	void	RecolorVideo();
+	void	DeformBezierCurve();
+	int		GetWidth() const { return frameCols; }
+	int		GetHeight() const { return frameRows; }
+	int		GetFrameCnt() const { return frameCnt; }
+	int		GetFramePaletteSize() const { return framePaletteSize; }
+	double	GetFps() const { return fps; }
+	sint*	GetCurrentImage_R(bool isAfter) const { return isAfter ? changedVideo_R[currFrameId] : oriVideo_R[currFrameId]; }
+	sint*	GetCurrentImage_G(bool isAfter) const { return isAfter ? changedVideo_G[currFrameId] : oriVideo_G[currFrameId]; }
+	sint*	GetCurrentImage_B(bool isAfter) const { return isAfter ? changedVideo_B[currFrameId] : oriVideo_B[currFrameId]; }
+	void	ChangeFrameTime(int frameId);
+	void	ExportRecoloredVideo(QString filename);
 	
-	Data();
-	void close();
-	//void Reset();
+	VideoRecolor();
+	void Clear();
 	
-	double** getChangedPalette_R() { return changedPalette_R; }
-	double** getChangedPalette_G() { return changedPalette_G; }
-	double** getChangedPalette_B() { return changedPalette_B; }
-	double** getOriginalPalette_R() { return oriPalette_R; }
-	double** getOriginalPalette_G() { return oriPalette_G; }
-	double** getOriginalPalette_B() { return oriPalette_B; }
+	double** GetChangedPalette_R() { return changedPalette_R; }
+	double** GetChangedPalette_G() { return changedPalette_G; }
+	double** GetChangedPalette_B() { return changedPalette_B; }
+	double** GetOriginalPalette_R() { return oriPalette_R; }
+	double** GetOriginalPalette_G() { return oriPalette_G; }
+	double** GetOriginalPalette_B() { return oriPalette_B; }
 
-	double* getCurrentChangedPalette_R() { return changedPalette_R[currentFrame]; }
-	double* getCurrentChangedPalette_G() { return changedPalette_G[currentFrame]; }
-	double* getCurrentChangedPalette_B() { return changedPalette_B[currentFrame]; }
-	double* getCurrentOriPaletet_R() { return oriPalette_R[currentFrame]; }
-	double* getCurrentOriPaletet_G() { return oriPalette_G[currentFrame]; }
-	double* getCurrentOriPaletet_B() { return oriPalette_B[currentFrame]; }
+	double* GetCurrentChangedPalette_R() { return changedPalette_R[currFrameId]; }
+	double* GetCurrentChangedPalette_G() { return changedPalette_G[currFrameId]; }
+	double* GetCurrentChangedPalette_B() { return changedPalette_B[currFrameId]; }
+	double* GetCurrentOriPaletet_R() { return oriPalette_R[currFrameId]; }
+	double* GetCurrentOriPaletet_G() { return oriPalette_G[currFrameId]; }
+	double* GetCurrentOriPaletet_B() { return oriPalette_B[currFrameId]; }
 
-	void setPaletteColor(int id, QColor c);
-	void readPaletteColor();
-	void exportPaletteColor();
-	void resetPaletteColor(int id);
-	void resetFramePalettes();
-	void resetAllPaletteColors();
-	void removeSelection(int id);
+	void	SetPaletteColor(int id, QColor c);
+	void	ImportEditedFramePalettes(QString filename);
+	void	ExportEditedFramePalettes(QString filename);
+	void	ResetCurrFramePaletteColor(int id);
+	void	ResetCurrFrameAllPaletteColors();
+	void	ResetAllFramePalettes();
+	void	RemoveSelection(int id);
 
-	vector<double> A;
+	vector<double> CtrlPointBernsteinCoeff;
 
 public slots:
 signals:
 	void updated();
 
 private:
-	string videoname;
+	string videoName;	
 	sint** oriVideo_R;
-	sint** oriVideo_G;
-	sint** oriVideo_B;
+	sint** oriVideo_G;		
+	sint** oriVideo_B;		
 	sint** changedVideo_R;
-	sint** changedVideo_G;
-	sint** changedVideo_B;
+	sint** changedVideo_G;	
+	sint** changedVideo_B;	
 
 	double** oriPalette_R;
-	double** oriPalette_G;
-	double** oriPalette_B;
+	double** oriPalette_G;		
+	double** oriPalette_B;		
 	double** changedPalette_R;
-	double** changedPalette_G;
-	double** changedPalette_B;
+	double** changedPalette_G;	
+	double** changedPalette_B;	
 
-	float** weights;
+	float** weights; //weight of each pixel with respect to the frame palette colors
 
 	vector<vector<double>> bezeirControl_L;
-	vector<vector<double>> bezeirControl_A;
-	vector<vector<double>> bezeirControl_B;
+	vector<vector<double>> bezeirControl_A;	
+	vector<vector<double>> bezeirControl_B;	
 
 	vector<vector<int>> selectedColor;
 	vector<int> selectedFrame;
 	vector<int> selectedId;
+	vector<double> bezierDerivCoeff;
+	vector<vector<double>> oriBezierDeriv_L;
+	vector<vector<double>> oriBezierDeriv_A;
+	vector<vector<double>> oriBezierDeriv_B;
 
-	vector<double> coefficient1;
-	vector<double> coefficient2;
-	
-	vector<vector<double>> oriDiri_L;
-	vector<vector<double>> oriDiri_A;
-	vector<vector<double>> oriDiri_B;
-
-	int paletteNum;
-	int controlNum;
-
-	int videoNum;
-	int video_rows;
-	int video_cols;
-	int videoSize;
-	int video_depth = 3;
+	int framePaletteSize;
+	int BezierCtrlPointNum;
+	int frameCnt;
+	int frameRows;
+	int frameCols;
+	int frameSize;
 	int fps;
 };
 

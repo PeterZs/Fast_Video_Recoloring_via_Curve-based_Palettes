@@ -8,7 +8,7 @@ void RGB2LAB(const int& sR, const int& sG, const int& sB, double& lval, double& 
 
 void RGB2XYZ(const int& sR, const int& sG, const int& sB, double& X, double& Y, double& Z);
 
-void generateSuperpixels(
+void GenerateSuperpixels(
 	const sint* imageR,
 	const sint* imageG,
 	const sint* imageB,
@@ -18,7 +18,7 @@ void generateSuperpixels(
 	const int& K,
 	const int& cols,
 	const int& rows,
-	vector<int>& clustersize);
+	vector<int>& superpixelSize);
 
 void DoRGBtoLABConversion(
 	const sint* imageR,
@@ -80,4 +80,4 @@ void PerformSuperpixelSegmentation_VariableSandM(
 	vector<int>& klabels,
 	const int& STEP,
 	const int& NUMITR,
-	vector<int>& clustersize);
+	vector<int>& superpixelSize);
